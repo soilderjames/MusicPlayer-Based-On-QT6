@@ -32,7 +32,7 @@ void musicplayer::find()
 {
     qDebug()<<"start find!";
     QDir dir;
-    dir.setPath("F:\\Music\\周杰伦");
+    dir.setPath("*****DIR YOU WANT*****");
     QDirIterator file(dir,QDirIterator::Subdirectories);
     while (file.hasNext())
     {
