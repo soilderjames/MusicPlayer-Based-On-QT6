@@ -210,10 +210,10 @@ Window {
                                 playbutton.state = "PAUSE"
                             }
                             onPressed: {
-                                icon.source = "qrc:/icon/_play.png"
+                                icon.source = "qrc:/icon/_pause.png"
                             }
                             onPressedChanged: {
-                                icon.source = "qrc:/icon/play.png"
+                                icon.source = "qrc:/icon/pause.png"
                             }
                         }
                     },
@@ -227,10 +227,10 @@ Window {
                                 playbutton.state = "PLAYING"
                             }
                             onPressed: {
-                                icon.source = "qrc:/icon/_pause.png"
+                                icon.source = "qrc:/icon/_play.png"
                             }
                             onPressedChanged: {
-                                icon.source = "qrc:/icon/pause.png"
+                                icon.source = "qrc:/icon/play.png"
                             }
                         }
                     },
