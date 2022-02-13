@@ -8,5 +8,10 @@
         <file>icon/pause.png</file>
         <file>icon/play.png</file>
         <file>icon/pre.png</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>icon/order.png</file>
+        <file>icon/shuffle.png</file>
+        <file>icon/musicfile.png</file>
+        <file>icon/repeat.png</file>
     </qresource>
 </RCC>

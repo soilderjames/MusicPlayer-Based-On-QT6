@@ -1,5 +1,8 @@
 QT += quick
+QT += quickcontrols2
 QT += multimedia
+QT += widgets
+QT += core
 SOURCES += \
         main.cpp \
         player.cpp

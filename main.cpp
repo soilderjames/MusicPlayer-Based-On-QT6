@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QtQuickControls2>
 #include "player.h"
 
 int main(int argc, char *argv[])

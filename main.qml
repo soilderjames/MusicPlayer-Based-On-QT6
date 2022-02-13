@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
+import QtQuick.Dialogs
 import Player
 
 Window {
@@ -11,6 +12,18 @@ Window {
     maximumHeight: 480
     visible: true
     title: qsTr("音乐播放器")
+    FolderDialog {
+        id: folderDialog
+        title: "选择音乐文件夹"
+        onAccepted: {
+            var path = folderDialog.selectedFolder.toString()
+            path = path.replace(/^(file:\/{3})|(qrc:\/{2})|(http:\/{2})/, "")
+            musicplayer.start(path)
+            playbutton.icon.source = "qrc:/icon/pause.png"
+            playbutton.state = "PLAYING"
+        }
+
+    }
     Rectangle {
         id: panel
         width: Window.width
@@ -50,14 +63,14 @@ Window {
             anchors.bottomMargin: 5
             width: Window.width * 4 / 5
             to: 1.0
-            onMoved:musicplayer.set_pos(musicpos.value);
+            onMoved: musicplayer.set_pos(musicpos.value)
             Label {
                 id: time
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.right: parent.left
                 anchors.rightMargin: 5
                 font.pixelSize: 12
-                color:"white"
+                color: "white"
             }
             Label {
                 id: durationtime
@@ -65,7 +78,7 @@ Window {
                 anchors.left: parent.right
                 anchors.leftMargin: 5
                 font.pixelSize: 12
-                color:"white"
+                color: "white"
             }
         }
         RowLayout {
@@ -117,9 +130,51 @@ Window {
                     var pos_ms = (info.pos / 1000 - pos_m * 60).toFixed(1)
                     var dur_m = Math.floor(info.dur / 60000)
                     var dur_ms = (info.dur / 1000 - dur_m * 60).toFixed(1)
-                    time.text=(`${pos_m}:${pos_ms.padStart(4, 0)}`)
-                    durationtime.text=(`${dur_m}:${dur_ms.padStart(4, 0)}`)
+                    time.text = (`${pos_m}:${pos_ms.padStart(4, 0)}`)
+                    durationtime.text = (`${dur_m}:${dur_ms.padStart(4, 0)}`)
                 }
+            }
+            RoundButton {
+                id: playmode
+                icon.source: "qrc:/icon/order.png"
+                icon.width: 32
+                icon.height: 32
+                state:"order"
+                states: [
+                    State {
+                        name: "shuffle"
+                        PropertyChanges {
+                            target: playmode
+                            onClicked: {
+                                playmode.icon.source = "qrc:/icon/order.png"
+                                musicplayer.play_mode(2)
+                                playmode.state="order"
+                            }
+                        }
+                    },
+                    State {
+                        name: "order"
+                        PropertyChanges {
+                            target: playmode
+                            onClicked: {
+                                playmode.icon.source = "qrc:/icon/repeat.png"
+                                musicplayer.play_mode(1)
+                                playmode.state="repeat"
+                            }
+                        }
+                    },
+                    State {
+                        name: "repeat"
+                        PropertyChanges {
+                            target: playmode
+                            onClicked: {
+                                playmode.icon.source = "qrc:/icon/shuffle.png"
+                                musicplayer.play_mode(3)
+                                playmode.state="shuffle"
+                            }
+                        }
+                    }
+                ]
             }
             RoundButton {
                 id: prebutton
@@ -129,7 +184,6 @@ Window {
                 icon.height: 32
                 onClicked: {
                     musicplayer.previous()
-                    playbutton.icon.source = "qrc:/icon/pause.png"
                 }
                 onPressed: {
                     icon.source = "qrc:/icon/_pre.png"
@@ -144,7 +198,7 @@ Window {
                 icon.source: "qrc:/icon/play.png"
                 icon.width: 32
                 icon.height: 32
-                state: "STOP"
+                state: "NOMEDIA"
                 states: [
                     State {
                         name: "PLAYING"
@@ -181,34 +235,33 @@ Window {
                         }
                     },
                     State {
-                        name: "STOP"
-                        PropertyChanges {
-                            target: playbutton
-                            onClicked: {
-                                musicplayer.find()
-                                musicplayer.start()
-                                icon.source = "qrc:/icon/pause.png"
-                                playbutton.state = "PLAYING"
-                            }
-                        }
+                        name: "NOMEDIA"
                     }
                 ]
             }
             RoundButton {
                 id: nextbutton
                 icon.name: "next"
-                icon.source: "qrc:/icon/next.png"
                 icon.width: 32
                 icon.height: 32
+                icon.source: "qrc:/icon/next.png"
                 onClicked: {
                     musicplayer.next()
-                    playbutton.icon.source = "qrc:/icon/pause.png"
                 }
                 onPressed: {
                     icon.source = "qrc:/icon/_next.png"
                 }
                 onPressedChanged: {
                     icon.source = "qrc:/icon/next.png"
+                }
+            }
+            RoundButton{
+                id: filechoosebutton
+                icon.width: 32
+                icon.height: 32
+                icon.source: "qrc:/icon/musicfile.png"
+                onClicked: {
+                    folderDialog.open()
                 }
             }
         }

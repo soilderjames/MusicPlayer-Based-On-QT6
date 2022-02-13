@@ -9,40 +9,52 @@
 #include <QThread>
 #include <QMediaMetaData>
 #include <QQuickImageProvider>
-
-
-struct m_info
-{
-    QString Title;
-    QString Author;
-    QString AlbumTitle;
-    QImage img;
-    qint64 Pos;
-    qint64 Dur;
-};
+#include <QRandomGenerator>
 
 class ablumimage : public QQuickImageProvider
 {
-    public:
+public:
     ablumimage();
     QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize);
 };
 
 class musicplayer : public QObject
 {
+public:
+    musicplayer(QObject *parent = 0);
+    ~musicplayer();
+    QMediaPlayer player;
+    QAudioOutput audioOutput;
+    QStringList Filelist;
+    QRandomGenerator shuffler;
+
+private:
+    struct m_info
+    {
+        QString Title;
+        QString Author;
+        QString AlbumTitle;
+        QImage img;
+        qint64 Pos;
+        qint64 Dur;
+    };
+    qint64 music_num = 0;
+    qint64 current_music_num = 0;
+    bool shuffle =false;
+    bool loop=false;
+    m_info Musicinfo;
+
     Q_OBJECT
-    public:
-    Q_INVOKABLE void find();
-    Q_INVOKABLE void start();
+public:    
     Q_INVOKABLE QVariantMap give_metadata(void);
     Q_INVOKABLE QVariantMap give_pos(void);
-    Q_INVOKABLE void set_pos(qreal);
-
-    signals:
+signals:
     void metadata_get();
     void pos_get();
 
-    public slots:
+public slots:
+    void start(QUrl url);
+    void set_pos(qreal);
     void end_next();
     void get_metadata();
     void get_pos();
@@ -50,6 +62,7 @@ class musicplayer : public QObject
     void previous();
     void pause();
     void play();
+    void play_mode(int);
 };
 
 #endif // PLAYER_H
