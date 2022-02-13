@@ -9,7 +9,7 @@ A Simple MusicPlayer Based On QT6
 2022/2/13 Update<br> 
 1、Add shuffle repeat playmode<br> 
 增加随机及重复播放功能<br> 
-2、Add folder selection function\<br> 
+2、Add folder selection function<br> 
 增加音乐文件夹选择功能<br> 
 3、Add theme<br> 
 使用Universal主题<br> 
