@@ -10,7 +10,12 @@
 #include <QMediaMetaData>
 #include <QQuickImageProvider>
 #include <QRandomGenerator>
-
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <tag.h>
+#include <fileref.h>
+#include <tpropertymap.h>
 class ablumimage : public QQuickImageProvider
 {
 public:
@@ -25,7 +30,7 @@ public:
     ~musicplayer();
     QMediaPlayer player;
     QAudioOutput audioOutput;
-    QStringList Filelist;
+    QStringList playlist;
     QRandomGenerator shuffler;
 
 private:
@@ -53,7 +58,7 @@ signals:
     void pos_get();
 
 public slots:
-    void start(QUrl url);
+    void start();
     void set_pos(qreal);
     void end_next();
     void get_metadata();
@@ -63,6 +68,7 @@ public slots:
     void pause();
     void play();
     void play_mode(int);
+    void appdata_store(QUrl url,bool newfolder);
 };
 
 #endif // PLAYER_H

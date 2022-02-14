@@ -32,61 +32,12 @@ void musicplayer::next()
     }
     if (player.playbackState() == 1)
     {
-        player.setSource(QUrl::fromLocalFile(Filelist.at(current_music_num)));
+        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
         player.play();
     }
     else
     {
-        player.setSource(QUrl::fromLocalFile(Filelist.at(current_music_num)));
-    }
-}
-void musicplayer::start(QUrl url)
-{
-    const QStringList filefilter = {"*.mp3", "*.wav", "*.m4a", "*.wma", "*.flac", "*.aac", "*.ape"};
-    if (player.mediaStatus() == 0)
-    {
-        qDebug() << "start find!";
-        QDir dir;
-        dir.setPath(url.toString());
-        QDirIterator file(dir.absolutePath(), filefilter, QDir::Files, QDirIterator::Subdirectories);
-        while (file.hasNext())
-        {
-            file.next();
-            QFileInfo info = file.fileInfo();
-            if (info.isFile())
-            {
-                Filelist.append(info.absoluteFilePath());
-                music_num++;
-            }
-        }
-        player.setAudioOutput(&audioOutput);
-        player.setSource(QUrl::fromLocalFile(Filelist.at(current_music_num)));
-        player.play();
-        connect(&player, &QMediaPlayer::mediaStatusChanged, this, &musicplayer::end_next);
-        connect(&player, &QMediaPlayer::durationChanged, this, &musicplayer::get_metadata);
-        connect(&player, &QMediaPlayer::positionChanged, this, &musicplayer::get_pos);
-    }
-    else
-    {
-        qDebug() << "change dir!";
-        QDir dir;
-        dir.setPath(url.toString());
-        QDirIterator file(dir.absolutePath(), filefilter, QDir::Files, QDirIterator::Subdirectories);
-        Filelist.clear();
-        current_music_num = 0;
-        music_num = 0;
-        while (file.hasNext())
-        {
-            file.next();
-            QFileInfo info = file.fileInfo();
-            if (info.isFile())
-            {
-                Filelist.append(info.absoluteFilePath());
-                music_num++;
-            }
-        }
-        player.setSource(QUrl::fromLocalFile(Filelist.at(current_music_num)));
-        player.play();
+        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
     }
 }
 
@@ -105,18 +56,18 @@ void musicplayer::previous()
     }
     if (player.playbackState() == 1)
     {
-        player.setSource(QUrl::fromLocalFile(Filelist.at(current_music_num)));
+        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
         player.play();
     }
     else
     {
-        player.setSource(QUrl::fromLocalFile(Filelist.at(current_music_num)));
+        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
     }
 }
 
 void musicplayer::end_next()
 {
-    if (player.mediaStatus() == 6&&loop==false)
+    if (player.mediaStatus() == 6 && loop == false)
     {
         if (!shuffle)
         {
@@ -129,7 +80,7 @@ void musicplayer::end_next()
         {
             current_music_num = shuffler.bounded(0, music_num);
         }
-        player.setSource(QUrl::fromLocalFile(Filelist.at(current_music_num)));
+        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
         player.play();
     }
 }
@@ -141,7 +92,6 @@ void musicplayer::get_metadata()
     Musicinfo.Title = info.stringValue(info.Title);
     Musicinfo.AlbumTitle = info.stringValue(info.AlbumTitle);
     image = info.value(info.ThumbnailImage).value<QImage>();
-    qDebug() << image;
     emit metadata_get();
 }
 
@@ -188,10 +138,137 @@ void musicplayer::set_pos(qreal pos)
 
 void musicplayer::play_mode(int mode)
 {
-    switch(mode)
+    switch (mode)
     {
-    case 1: {shuffle =false;loop=true;player.setLoops(-1);qDebug() << "loop mode";break;}
-    case 2: {shuffle = false;loop=false;player.setLoops(1);qDebug() << "order mode";break;}
-    case 3: {shuffle = true;loop=false;player.setLoops(1);qDebug() << "shuffle mode";break;}
+    case 1:
+    {
+        shuffle = false;
+        loop = true;
+        player.setLoops(-1);
+        qDebug() << "loop mode";
+        break;
     }
+    case 2:
+    {
+        shuffle = false;
+        loop = false;
+        player.setLoops(1);
+        qDebug() << "order mode";
+        break;
+    }
+    case 3:
+    {
+        shuffle = true;
+        loop = false;
+        player.setLoops(1);
+        qDebug() << "shuffle mode";
+        break;
+    }
+    }
+}
+
+void musicplayer::appdata_store(QUrl url, bool newfolder)
+{
+    const QStringList filefilter = {"*.mp3", "*.wav", "*.m4a", "*.wma", "*.flac", "*.aac", "*.ape"};
+    QDir dir;
+    QSqlDatabase mediadatabase;
+    mediadatabase = QSqlDatabase::addDatabase("QSQLITE", "store");
+    mediadatabase.setDatabaseName("metadata.db");
+    if (!mediadatabase.open())
+    {
+        qDebug() << "Error: Failed to connect database." << mediadatabase.lastError();
+    }
+    else
+    {
+        qDebug() << "Succeed to connect database.";
+    }
+    QSqlQuery query(mediadatabase);
+    if (newfolder == true)
+    {
+        if (!query.exec("drop table playlist"))
+        {
+            qDebug() << query.lastError();
+        }
+        else
+        {
+            qDebug() << "table cleared";
+
+        }
+        if (!query.exec("create table playlist (id, url,title,artist,album)"))
+        {
+            qDebug() << "Error: Fail to create table." << query.lastError();
+            return;
+        }
+        else
+        {
+            qDebug() << "Table created!";
+        }
+    }
+    dir.setPath(url.toString());
+    QDirIterator file(dir.absolutePath(), filefilter, QDir::Files, QDirIterator::Subdirectories);
+    while (file.hasNext())
+    {
+        file.next();
+        QFileInfo info = file.fileInfo();
+        if (info.isFile())
+        {
+            TagLib::FileRef f(info.absoluteFilePath().toStdWString().data());
+            TagLib::String artist = f.tag()->artist();
+            TagLib::String title = f.tag()->title();
+            TagLib::String album = f.tag()->album();
+            query.prepare("INSERT INTO playlist (id, url,title,artist,album) "
+                          "VALUES (?, ?, ?, ?, ?)");
+            query.addBindValue(music_num);
+            query.addBindValue(info.absoluteFilePath());
+            query.addBindValue(QString::fromStdWString(title.toWString()));
+            query.addBindValue(QString::fromStdWString(artist.toWString()));
+            query.addBindValue(QString::fromStdWString(album.toWString()));
+            music_num++;
+            if (!query.exec())
+            {
+                qDebug() << query.lastError();
+                mediadatabase.close();
+                return;
+            }
+        }
+    }
+    mediadatabase.close();
+}
+void musicplayer::start()
+{
+    QSqlDatabase mediadatabase;
+    mediadatabase = QSqlDatabase::addDatabase("QSQLITE", "read");
+    mediadatabase.setDatabaseName("metadata.db");
+    if (!mediadatabase.open())
+    {
+        qDebug() << "Error: Failed to connect database." << mediadatabase.lastError();
+    }
+    else
+    {
+        qDebug() << "Succeed to connect database.";
+    }
+    QSqlQuery query(mediadatabase);
+    query.exec("select * from playlist");
+    if (!query.exec())
+    {
+        qDebug() << query.lastError();
+    }
+    else
+    {
+        while(query.next())
+        {
+            QString url = query.value(1).toString();
+            QString title = query.value(2).toString();
+            QString artist = query.value(3).toString();
+            QString album = query.value(4).toString();
+            playlist.append(url);
+            music_num++;
+        }
+    }
+    player.setAudioOutput(&audioOutput);
+    player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
+    player.play();
+    connect(&player, &QMediaPlayer::mediaStatusChanged, this, &musicplayer::end_next);
+    connect(&player, &QMediaPlayer::durationChanged, this, &musicplayer::get_metadata);
+    connect(&player, &QMediaPlayer::positionChanged, this, &musicplayer::get_pos);
 }

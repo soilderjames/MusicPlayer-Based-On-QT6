@@ -18,7 +18,9 @@ Window {
         onAccepted: {
             var path = folderDialog.selectedFolder.toString()
             path = path.replace(/^(file:\/{3})|(qrc:\/{2})|(http:\/{2})/, "")
-            musicplayer.start(path)
+            //musicplayer.start(path)
+            musicplayer.appdata_store(path,true);
+            musicplayer.start();
             playbutton.icon.source = "qrc:/icon/pause.png"
             playbutton.state = "PLAYING"
         }
@@ -236,6 +238,20 @@ Window {
                     },
                     State {
                         name: "NOMEDIA"
+                        PropertyChanges {
+                            target: playbutton
+                            onClicked: {
+                                musicplayer.start()
+                                icon.source = "qrc:/icon/pause.png"
+                                playbutton.state = "PLAYING"
+                            }
+                            onPressed: {
+                                icon.source = "qrc:/icon/_play.png"
+                            }
+                            onPressedChanged: {
+                                icon.source = "qrc:/icon/play.png"
+                            }
+                        }
                     }
                 ]
             }
