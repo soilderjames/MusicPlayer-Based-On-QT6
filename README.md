@@ -13,3 +13,9 @@ A Simple MusicPlayer Based On QT6
 增加音乐文件夹选择功能<br> 
 3、Add theme<br> 
 使用Universal主题<br> 
+
+
+2022/2/14 更新<br> 
+1、利用Sqlite存储应用数据<br> 
+2、使用taglib库读取音乐信息并存入数据库<br> 
+
