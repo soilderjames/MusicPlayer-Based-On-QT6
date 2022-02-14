@@ -185,7 +185,8 @@ Window {
                 icon.width: 32
                 icon.height: 32
                 onClicked: {
-                    musicplayer.previous()
+                    if(playbutton.state!=="NOMEDIA"){
+                    musicplayer.previous()}
                 }
                 onPressed: {
                     icon.source = "qrc:/icon/_pre.png"
@@ -262,7 +263,8 @@ Window {
                 icon.height: 32
                 icon.source: "qrc:/icon/next.png"
                 onClicked: {
-                    musicplayer.next()
+                    if(playbutton.state!=="NOMEDIA"){
+                    musicplayer.next()}
                 }
                 onPressed: {
                     icon.source = "qrc:/icon/_next.png"

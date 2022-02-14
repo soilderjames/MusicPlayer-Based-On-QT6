@@ -16,6 +16,9 @@
 #include <tag.h>
 #include <fileref.h>
 #include <tpropertymap.h>
+#include <audioproperties.h>
+#include <QTime>
+
 class ablumimage : public QQuickImageProvider
 {
 public:
@@ -30,17 +33,16 @@ public:
     ~musicplayer();
     QMediaPlayer player;
     QAudioOutput audioOutput;
-    QStringList playlist;
+    QVariantList list;
     QRandomGenerator shuffler;
 
 private:
     struct m_info
     {
+        QString Url;
         QString Title;
         QString Author;
-        QString AlbumTitle;
-        QImage img;
-        qint64 Pos;
+        QString Album;
         qint64 Dur;
     };
     qint64 music_num = 0;

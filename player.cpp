@@ -28,16 +28,19 @@ void musicplayer::next()
     }
     else
     {
+        shuffler.seed(QTime::currentTime().msec());
         current_music_num = shuffler.bounded(0, music_num);
     }
     if (player.playbackState() == 1)
     {
-        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
+        Musicinfo=list.at(current_music_num).value<m_info>();
+        player.setSource(QUrl::fromLocalFile(Musicinfo.Url));
         player.play();
     }
     else
     {
-        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
+        Musicinfo=list.at(current_music_num).value<m_info>();
+        player.setSource(QUrl::fromLocalFile(Musicinfo.Url));
     }
 }
 
@@ -52,16 +55,19 @@ void musicplayer::previous()
     }
     else
     {
+        shuffler.seed(QTime::currentTime().msec());
         current_music_num = shuffler.bounded(0, music_num);
     }
     if (player.playbackState() == 1)
     {
-        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
+        Musicinfo=list.at(current_music_num).value<m_info>();
+        player.setSource(QUrl::fromLocalFile(Musicinfo.Url));
         player.play();
     }
     else
     {
-        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
+        Musicinfo=list.at(current_music_num).value<m_info>();
+        player.setSource(QUrl::fromLocalFile(Musicinfo.Url));
     }
 }
 
@@ -78,9 +84,11 @@ void musicplayer::end_next()
         }
         else
         {
+            shuffler.seed(QTime::currentTime().msec());
             current_music_num = shuffler.bounded(0, music_num);
         }
-        player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
+        Musicinfo=list.at(current_music_num).value<m_info>();
+        player.setSource(QUrl::fromLocalFile(Musicinfo.Url));
         player.play();
     }
 }
@@ -88,17 +96,12 @@ void musicplayer::end_next()
 void musicplayer::get_metadata()
 {
     QMediaMetaData info = player.metaData();
-    Musicinfo.Author = info.stringValue(info.Author);
-    Musicinfo.Title = info.stringValue(info.Title);
-    Musicinfo.AlbumTitle = info.stringValue(info.AlbumTitle);
     image = info.value(info.ThumbnailImage).value<QImage>();
     emit metadata_get();
 }
 
 void musicplayer::get_pos()
 {
-    Musicinfo.Pos = player.position();
-    Musicinfo.Dur = player.duration();
     emit pos_get();
 }
 
@@ -118,7 +121,7 @@ QVariantMap musicplayer::give_metadata(void)
     map.clear();
     map.insert("Author", Musicinfo.Author);
     map.insert("Title", Musicinfo.Title);
-    map.insert("Ablum", Musicinfo.AlbumTitle);
+    map.insert("Ablum", Musicinfo.Album);
     return map;
 }
 
@@ -194,7 +197,7 @@ void musicplayer::appdata_store(QUrl url, bool newfolder)
             qDebug() << "table cleared";
 
         }
-        if (!query.exec("create table playlist (id, url,title,artist,album)"))
+        if (!query.exec("create table playlist (id, url,title,artist,album,duration)"))
         {
             qDebug() << "Error: Fail to create table." << query.lastError();
             return;
@@ -216,13 +219,15 @@ void musicplayer::appdata_store(QUrl url, bool newfolder)
             TagLib::String artist = f.tag()->artist();
             TagLib::String title = f.tag()->title();
             TagLib::String album = f.tag()->album();
-            query.prepare("INSERT INTO playlist (id, url,title,artist,album) "
-                          "VALUES (?, ?, ?, ?, ?)");
+            TagLib::ulonglong duration=f.audioProperties()->length();
+            query.prepare("INSERT INTO playlist (id, url,title,artist,album,duration) "
+                          "VALUES (?, ?, ?, ?, ? ,?)");
             query.addBindValue(music_num);
             query.addBindValue(info.absoluteFilePath());
             query.addBindValue(QString::fromStdWString(title.toWString()));
             query.addBindValue(QString::fromStdWString(artist.toWString()));
             query.addBindValue(QString::fromStdWString(album.toWString()));
+            query.addBindValue(duration);
             music_num++;
             if (!query.exec())
             {
@@ -257,16 +262,23 @@ void musicplayer::start()
     {
         while(query.next())
         {
-            QString url = query.value(1).toString();
-            QString title = query.value(2).toString();
-            QString artist = query.value(3).toString();
-            QString album = query.value(4).toString();
-            playlist.append(url);
+            /*将音频信息打包为结构体写入链表*/
+            m_info music_info;
+            QVariant info_pack;
+            music_info.Url = query.value(1).toString();
+            music_info.Title = query.value(2).toString();
+            music_info.Author = query.value(3).toString();
+            music_info.Album = query.value(4).toString();
+            music_info.Dur = query.value(5).toULongLong();
+            info_pack.setValue(music_info);
+            list.append(info_pack);
             music_num++;
         }
     }
     player.setAudioOutput(&audioOutput);
-    player.setSource(QUrl::fromLocalFile(playlist.at(current_music_num)));
+    /*从链表中读取第一个结构体*/
+    Musicinfo=list.at(current_music_num).value<m_info>();
+    player.setSource(QUrl::fromLocalFile(Musicinfo.Url));
     player.play();
     connect(&player, &QMediaPlayer::mediaStatusChanged, this, &musicplayer::end_next);
     connect(&player, &QMediaPlayer::durationChanged, this, &musicplayer::get_metadata);
