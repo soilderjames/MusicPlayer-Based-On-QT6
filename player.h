@@ -58,6 +58,7 @@ public:
 signals:
     void metadata_get();
     void pos_get();
+    void no_playlist();
 
 public slots:
     void start();

@@ -253,10 +253,12 @@ void musicplayer::start()
         qDebug() << "Succeed to connect database.";
     }
     QSqlQuery query(mediadatabase);
-    query.exec("select * from playlist");
-    if (!query.exec())
+    if (!query.exec("select * from playlist"))
     {
         qDebug() << query.lastError();
+        emit no_playlist();
+        mediadatabase.close();
+        return;
     }
     else
     {

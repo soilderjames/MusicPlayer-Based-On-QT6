@@ -13,5 +13,7 @@
         <file>icon/shuffle.png</file>
         <file>icon/musicfile.png</file>
         <file>icon/repeat.png</file>
+        <file>icon/close.png</file>
+        <file>icon/min.png</file>
     </qresource>
 </RCC>
