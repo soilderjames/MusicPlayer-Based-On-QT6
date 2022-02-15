@@ -9,6 +9,8 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
     QQmlApplicationEngine engine; 
     engine.addImageProvider(QLatin1String("ablum"),new ablumimage);
+    CursorPosProvider mousePosProvider;
+    engine.rootContext()->setContextProperty("mousePosition", &mousePosProvider);
     qmlRegisterType<musicplayer>("Player",1,0,"Player");
     const QUrl url(u"qrc:/QML_PLAYER/main.qml"_qs);
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

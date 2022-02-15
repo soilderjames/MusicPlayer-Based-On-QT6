@@ -6,7 +6,7 @@ import QtQuick.Dialogs
 import Player
 
 Window {
-    id:win
+    id: win
     minimumWidth: 480
     maximumWidth: 480
     minimumHeight: 480
@@ -46,6 +46,21 @@ Window {
                 width: Window.width
                 height: Window.width / 4
                 anchors.top: parent.top
+                MouseArea {
+                    property var clickPos
+                    anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton
+                    onPressed: {
+                        clickPos = {
+                            "x": mouseX,
+                            "y": mouseY
+                        }
+                    }
+                    onPositionChanged: {
+                        win.setX(mousePosition.cursorPos().x - clickPos.x)
+                        win.setY(mousePosition.cursorPos().y - clickPos.y)
+                    }
+                }
                 gradient: Gradient {
                     GradientStop {
                         position: 1.0
