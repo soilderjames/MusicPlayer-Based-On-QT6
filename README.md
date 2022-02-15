@@ -3,8 +3,9 @@ A Simple MusicPlayer Based On QT6
  
  
  
+![snapshot](https://user-images.githubusercontent.com/22540667/153993319-5fa3551d-050c-4724-83c9-0ad834e33b45.png)<br>
 
-![snapshot](https://user-images.githubusercontent.com/22540667/153740081-d1ef7fe4-33a5-497f-9ec9-dc982a9a56d4.png)
+
 
 2022/2/13 Update<br> 
 1、Add shuffle repeat playmode<br> 
